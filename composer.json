@@ -1,0 +1,23 @@
+{
+  "name": "chizu/event",
+  "description": "A package that provides event functionality",
+  "type": "library",
+  "minimum-stability": "dev",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "chop1k",
+      "email": "fakeshopendesu@gmail.com"
+    }
+  ],
+  "version": "1.0.0",
+  "require": {
+    "php": "^7.4",
+    "php-ds/php-ds": ">=v1.3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Chizu\\Event\\": "src/"
+    }
+  }
+}
