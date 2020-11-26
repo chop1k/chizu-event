@@ -9,22 +9,19 @@ class Dispatcher
 {
     protected Map $events;
 
-    public function addEvent(string $event, callable $handler): void
+    public function has(string $event): bool
     {
-        $this->events->put($event, $handler);
+        return $this->events->hasKey($event);
     }
 
-    public function addEvents(array $events): void
+    public function override(string $event, $handlers): void
     {
-        foreach ($events as $event => $handler)
-        {
-            $this->addEvent($event, $handler);
-        }
+        $this->events->put($event, $handlers);
     }
 
-    public function __construct()
+    public function __construct(array $values = [])
     {
-        $this->events = new Map();
+        $this->events = new Map($values);
     }
 
     public function dispatch(string $event, $data): void
@@ -36,6 +33,32 @@ class Dispatcher
 
         $handler = $this->events->get($event);
 
-        $handler($data);
+        if (is_array($handler))
+        {
+            foreach ($handler as $func)
+            {
+                $func($data);
+            }
+        }
+        elseif (is_callable($handler))
+        {
+            $handler($data);
+        }
+    }
+
+    public function listen(string $event, callable $handler): void
+    {
+        if (!$this->events->hasKey($event))
+        {
+            $this->events->put($event, [$handler]);
+        }
+        else
+        {
+            $listeners = $this->events->get($event);
+
+            $listeners[] = $handler;
+
+            $this->events->put($event, $listeners);
+        }
     }
 }
