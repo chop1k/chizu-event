@@ -14,9 +14,14 @@ class Dispatcher
         return $this->events->hasKey($event);
     }
 
-    public function override(string $event, $handlers): void
+    public function set(string $name, Event $event): void
     {
-        $this->events->put($event, $handlers);
+        $this->events->put($name, $event);
+    }
+
+    public function get(string $name): Event
+    {
+        return $this->events->get($name);
     }
 
     public function __construct(array $values = [])
@@ -24,41 +29,13 @@ class Dispatcher
         $this->events = new Map($values);
     }
 
-    public function dispatch(string $event, $data): void
+    public function dispatch(string $event, ...$data)
     {
         if (!$this->events->hasKey($event))
         {
             throw new InvalidArgumentException(sprintf('Event with name "%s" not defined', $event));
         }
 
-        $handler = $this->events->get($event);
-
-        if (is_array($handler))
-        {
-            foreach ($handler as $func)
-            {
-                $func($data);
-            }
-        }
-        elseif (is_callable($handler))
-        {
-            $handler($data);
-        }
-    }
-
-    public function listen(string $event, callable $handler): void
-    {
-        if (!$this->events->hasKey($event))
-        {
-            $this->events->put($event, [$handler]);
-        }
-        else
-        {
-            $listeners = $this->events->get($event);
-
-            $listeners[] = $handler;
-
-            $this->events->put($event, $listeners);
-        }
+        return $this->events->get($event)->execute(...$data);
     }
 }
