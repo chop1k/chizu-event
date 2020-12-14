@@ -22,42 +22,57 @@ class Event
         $this->singleton = $singleton;
     }
 
-    protected array $handlers;
+    protected ?Executable $handler;
 
-    public function addHandler(callable $handler): void
+    /**
+     * @return Executable
+     */
+    public function getHandler(): ?Executable
     {
-        $this->handlers[] = $handler;
+        return $this->handler;
     }
 
-    public function __construct(array $handlers = [], bool $singleton = false)
+    /**
+     * @param Executable $handler
+     */
+    public function setHandler(Executable $handler): void
     {
-        $this->handlers = [];
-
-        foreach ($handlers as $handler)
-        {
-            if (is_callable($handler))
-            {
-                $this->addHandler($handler);
-            }
-        }
-
-        $this->singleton = $singleton;
+        $this->handler = $handler;
     }
 
-    public function execute(...$data)
+    public function __construct()
     {
-        if ($this->isSingleton())
-        {
-            return $this->handlers[0](...$data);
-        }
-        else
-        {
-            foreach ($this->handlers as $handler)
-            {
-                $handler(...$data);
-            }
+        $this->handler = null;
+        $this->singleton = false;
+    }
 
-            return null;
-        }
+    public static function createByCallback(callable $callback): Event
+    {
+        $event = new Event();
+
+        $event->setSingleton(true);
+        $event->setHandler(new Callback($callback));
+
+        return $event;
+    }
+
+    public static function createByMethod(object $instance, string $method): Event
+    {
+        $event = new Event();
+
+        $event->setSingleton(true);
+        $event->setHandler(new Method($instance, $method));
+
+        return $event;
+    }
+
+    public static function createByMany(Executable ...$executable): Event
+    {
+        $event = new Event();
+
+        $event->setSingleton(false);
+        $event->setHandler(new Handlers($executable));
+
+        return $event;
     }
 }
