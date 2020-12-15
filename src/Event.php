@@ -46,6 +46,11 @@ class Event
         $this->singleton = false;
     }
 
+    public function execute(...$args)
+    {
+        return $this->handler->execute(...$args);
+    }
+
     public static function createByCallback(callable $callback): Event
     {
         $event = new Event();
